@@ -1,0 +1,57 @@
+#!/usr/bin/env ruby
+require "nginxbrew"
+
+usage =<<-EOF
+Usage: nginxbrew [-v] [-h] command [<args>]
+
+    -v, --version                    Print the version and exit.
+    -h, --help                       Print this help.
+
+Available subcommands:
+    install <version>                Install nginx with specified version.
+    use <version>                    Switch nginx into specified version.
+    list                             Show list of installed nginx versions
+
+Optional environments:
+    NGINXBREW_HOME                   Path to nginxbrew (will be) installed, ~/nginxbrew is default.
+    NGINXBREW_USER                   User for nginx (enabled in `install`), "nginx" is default.
+    NGINXBREW_GROUP                  Group for nginx (enable in `install`), "nginx" is default.
+    NGINXBREW_DEBUG                  if 1, use DEBUG level for logging.
+    NGINXBREW_CONFIG                 /path/to/configfile written in ruby DSL for build nginx.
+EOF
+
+
+if ARGV.include?("-h") || ARGV.include?("--help") || ARGV.size == 0
+    puts usage
+    exit 0
+end
+
+if ARGV.include?("-v") || ARGV.include?("--version")
+    require "nginxbrew/version"
+    puts "nginxbrew #{Nginxbrew::VERSION}"
+    exit 0
+end
+
+
+ENV["HOME"] ||= File.dirname(__FILE__) # recover $HOME if empty
+
+
+begin
+    command = ARGV.shift
+    case command
+        when "install", "use"
+            version = ARGV.shift
+            raise Exception.new("version is required!") unless version
+            Nginxbrew.run(:"#{command}", envs={ "VERSION" => version })
+        when "list"
+            Nginxbrew.run(:list)
+        else
+            raise Exception.new("Unknown command '#{command}'")
+    end
+rescue SystemExit => e # from rake.abort
+    exit 255
+rescue Exception => e
+    $stderr.puts "ERROR: #{e.message}"
+    exit 255
+end
+
