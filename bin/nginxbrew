@@ -10,7 +10,9 @@ Usage: nginxbrew [-v] [-h] command [<args>]
 Available subcommands:
     install <version>                Install nginx with specified version.
     use <version>                    Switch nginx into specified version.
-    list                             Show list of installed nginx versions
+    list                             Show list of installed nginx versions.
+    nginxes                          Show list of available nginx versions.
+    openresties                      Show list of available openresty versions.
 
 Optional environments:
     NGINXBREW_HOME                   Path to nginxbrew (will be) installed, ~/nginxbrew is default.
@@ -45,6 +47,10 @@ begin
             Nginxbrew.run(:"#{command}", envs={ "VERSION" => version })
         when "list"
             Nginxbrew.run(:list)
+        when "nginxes"
+            Nginxbrew.run(:nginxes, envs={ "HEAD_VERSION" => ARGV.shift })
+        when "openresties"
+            Nginxbrew.run(:openresties, envs={ "HEAD_VERSION" => ARGV.shift })
         else
             raise Exception.new("Unknown command '#{command}'")
     end

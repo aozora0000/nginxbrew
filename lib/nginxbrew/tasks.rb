@@ -163,3 +163,24 @@ task :list => DIST_DIR do
     end
 end
 
+
+desc "list nginx versions"
+task :nginxes do
+    require "nginxbrew/nginxes"
+    HEAD_VERSION = ENV["HEAD_VERSION"]
+    nginxes = Nginxbrew::Nginxes.nginxes
+    ((HEAD_VERSION) ? nginxes.filter_versions(HEAD_VERSION) : nginxes.versions).each do |v|
+        $stdout.puts("[nginx-]#{v}")
+    end
+end
+
+
+desc "list openresty versions"
+task :openresties do
+    require "nginxbrew/nginxes"
+    HEAD_VERSION = ENV["HEAD_VERSION"]
+    nginxes = Nginxbrew::Nginxes.openresties
+    ((HEAD_VERSION) ? nginxes.filter_versions(HEAD_VERSION) : nginxes.versions).each do |v|
+        $stdout.puts("[ngx_openresty-]#{v}")
+    end
+end

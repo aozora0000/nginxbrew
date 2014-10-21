@@ -62,6 +62,22 @@ If you want to use openresty-1.7.0.1 from other version of nginx, you can do thi
 
     $ nginxbrew use openresty-1.7.0.1
 
+
+You can see all exsiting versions of nginxes/openresties by the following command.
+
+    $ nginxbrew nginxes
+    $ nginxbrew openresties
+
+If you specify prefix of version, the version will be filtered. 
+
+    $ nginxbrew nginxes 1.7
+      [nginx-]1.7.6
+      [nginx-]1.7.5
+      [nginx-]1.7.4
+       ...
+      [nginx-]1.7.0
+
+
 ## Customize configuration
 
 You can customize Nginxbrew behavior by changing ENV.
