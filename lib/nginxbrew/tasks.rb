@@ -2,6 +2,7 @@
 require "logger"
 require "pathname"
 require "fileutils"
+require "nginxbrew/nginxes"
 
 
 $logger = Logger.new(STDOUT)
@@ -40,8 +41,9 @@ end
 
 OPENRESTY = "openresty-"
 
-HOME_DIR = ENV["NGINXBREW_HOME"] || File.join(ENV["HOME"], "nginxbrew")
+
 VERSION = ENV["VERSION"]
+HOME_DIR = ENV["NGINXBREW_HOME"] || File.join(ENV["HOME"], "nginxbrew")
 NGINX_USER = ENV["NGINXBREW_USER"] || "nginx"
 NGINX_GROUP = ENV["NGINXBREW_GROUP"] || "nginx"
 
@@ -66,15 +68,27 @@ if VERSION
     require "nginxbrew/config/base"
 
     is_openresty = VERSION.index(OPENRESTY) == 0
-    version_ = VERSION
-    version_ = version_.slice(OPENRESTY.size, version_.size - 1) if is_openresty
+    nginxes = is_openresty ? Nginxbrew::Nginxes.openresties : Nginxbrew::Nginxes.nginxes
+
+    # resolve version name
+    version = nil
+    raw_version = nil
+    if is_openresty
+        raw_version = nginxes.head_of(VERSION.slice(OPENRESTY.size, VERSION.size - 1))
+        version = "#{OPENRESTY}#{raw_version}"
+    else
+        raw_version = nginxes.head_of(VERSION)
+        version = raw_version
+    end
+    $stdout.puts("resolved version: [#{is_openresty ? 'openresty' : 'nginx'}-]#{raw_version}")
+
 
     Nginxbrew.config = Nginxbrew::Configuration.new(
         :home_dir => HOME_DIR,
         :dist_dir => DIST_DIR,
-        :ngx_version => VERSION,
+        :ngx_version => version,
         :is_openresty => is_openresty,
-        :src => is_openresty ? "ngx_openresty-#{version_}" : "nginx-#{version_}",
+        :src => is_openresty ? "ngx_openresty-#{raw_version}" : "nginx-#{raw_version}",
         :ngx_user => NGINX_USER,
         :ngx_group => NGINX_GROUP
     )
@@ -90,7 +104,7 @@ if VERSION
     TARBALL_DOWNLOADED_TO = File.join(SOURCE_DIR, config.tarball)
     SOURCE_EXTRACTED_TO = File.join(SOURCE_DIR, config.src)
 
-    desc "get nginx tarball version:#{VERSION}"
+    desc "get nginx tarball version:#{version}"
     file TARBALL_DOWNLOADED_TO => SOURCE_DIR do
         Dir.chdir(SOURCE_DIR) do
             sh_exc("wget", config.url)
@@ -128,9 +142,9 @@ if VERSION
 
     desc "switch nginx version"
     task :use => [BIN_DIR, :chown] do
-        abort "version:#{VERSION} is not installed!" unless FileTest.directory?(config.dist_to)
+        abort "version:#{version} is not installed!" unless FileTest.directory?(config.dist_to)
         FileUtils.ln_s(config.ngx_sbin_path, NGINX_CURRENT_BIN_NAME, :force => true)
-        $stdout.puts("#{VERSION} default to use")
+        $stdout.puts("#{version} default to use")
         $stdout.puts("bin: #{config.ngx_sbin_path}")
     end
 end
@@ -166,7 +180,6 @@ end
 
 desc "list nginx versions"
 task :nginxes do
-    require "nginxbrew/nginxes"
     HEAD_VERSION = ENV["HEAD_VERSION"]
     nginxes = Nginxbrew::Nginxes.nginxes
     ((HEAD_VERSION) ? nginxes.filter_versions(HEAD_VERSION) : nginxes.versions).each do |v|
