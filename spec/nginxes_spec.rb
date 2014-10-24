@@ -48,6 +48,18 @@ describe Nginxbrew::Nginxes, "version control" do
         }.to raise_error
     end
 
+    it "should be raised exception when version is not found in head_of" do
+        expect {
+            Nginxbrew::Nginxes.new(Nginxbrew::Nginxes::TypeNginx, ["1", "2", "3"]).head_of("INVALID_VERSION")
+        }.to raise_error
+    end
+
+    it "should be raised exception when version is not found in filter_versions" do
+        expect {
+            Nginxbrew::Nginxes.new(Nginxbrew::Nginxes::TypeNginx, ["1", "2", "3"]).filter_versions("INVALID_VERSION")
+        }.to raise_error
+    end
+
     it "can know size of versions" do
         nginxes = Nginxbrew::Nginxes.new(Nginxbrew::Nginxes::TypeNginx, ["0.0.0", "0.0.1"])
         expect(nginxes.size).to eq 2

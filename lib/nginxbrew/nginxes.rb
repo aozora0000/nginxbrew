@@ -4,11 +4,19 @@ require "uri"
 
 module Nginxbrew
 
+    class VersionNotFoundError < StandardError
+
+        def initialize(v)
+            super("version '#{v}' is not found in all versions of nginxes/openresties")
+        end
+
+    end
+
     class Nginxes
 
         TypeNginx = "nginx"
         TypeOpenresty = "openresty"
-        
+
         attr_reader :ngx_type, :versions
 
         def initialize(ngx_type, versions)
@@ -27,17 +35,21 @@ module Nginxbrew
         def filter_versions(head_of)
             src_numbers = head_of.split(".")
             src_numbers_size = src_numbers.size
-            @versions.select do |v|
+            r = @versions.select do |v|
                 v.split(".").slice(0, src_numbers_size) == src_numbers
             end
+            raise VersionNotFoundError.new(head_of) if r.size == 0
+            r
         end
 
         def head_of(version)
             src_numbers = version.split(".")
             src_numbers_size = src_numbers.size
-            @versions.detect do |v|
+            r = @versions.detect do |v|
                 v.split(".").slice(0, src_numbers_size) == src_numbers
             end
+            raise VersionNotFoundError.new(version) unless r
+            r
         end
 
         def self.nginxes
