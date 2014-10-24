@@ -21,11 +21,12 @@ module Nginxbrew
             @dist_dir = opts[:dist_dir]
             @ngx_version = opts[:ngx_version]
             @is_openresty = opts[:is_openresty]
+            @version_name = version_name(@ngx_version, @is_openresty)
             @ngx_user = opts[:ngx_user]
             @ngx_group = opts[:ngx_group]
-            @dist_to = File.join(@dist_dir, "ngx-#{@ngx_version}")
-            @nginx_log_dir = File.join(@home_dir, "logs", @ngx_version)
-            @src = opts[:src]
+            @dist_to = File.join(@dist_dir, "ngx-#{@version_name}")
+            @nginx_log_dir = File.join(@home_dir, "logs", @version_name)
+            @src = src_name(@ngx_version, @is_openresty)
             @tarball = "#{@src}.tar.gz"
             @url = "#{@is_openresty ? OPENRESTY_URL : NGX_URL}/#{@tarball}"
             @ngx_sbin_path = File.join(@dist_to, "bin/nginx")
@@ -53,6 +54,16 @@ module Nginxbrew
                 --pid-path=#{@dist_to}/run/nginx.pid
             EOF
             cmd.split(" ").join(" ")
+        end
+
+        private
+
+        def version_name(v, is_openresty)
+            is_openresty ? "openresty-#{v}" : v
+        end
+
+        def src_name(v, is_openresty)
+            is_openresty ? "ngx_openresty-#{v}" : "nginx-#{v}"
         end
 
     end

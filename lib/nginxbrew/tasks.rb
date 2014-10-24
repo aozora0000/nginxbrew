@@ -41,7 +41,6 @@ end
 
 OPENRESTY = "openresty-"
 
-
 VERSION = ENV["VERSION"]
 HOME_DIR = ENV["NGINXBREW_HOME"] || File.join(ENV["HOME"], "nginxbrew")
 NGINX_USER = ENV["NGINXBREW_USER"] || "nginx"
@@ -86,9 +85,8 @@ if VERSION
     Nginxbrew.config = Nginxbrew::Configuration.new(
         :home_dir => HOME_DIR,
         :dist_dir => DIST_DIR,
-        :ngx_version => version,
+        :ngx_version => raw_version,
         :is_openresty => is_openresty,
-        :src => is_openresty ? "ngx_openresty-#{raw_version}" : "nginx-#{raw_version}",
         :ngx_user => NGINX_USER,
         :ngx_group => NGINX_GROUP
     )
@@ -133,6 +131,7 @@ if VERSION
 
     desc "install nginx"
     task :install => [config.builtfile] do
+        Rake::Task[:chown].invoke
         if installed_packages(DIST_DIR).size == 1
             $logger.debug("this is first install, use this version as default")
             Rake::Task[:use].invoke
@@ -144,6 +143,7 @@ if VERSION
     task :use => [BIN_DIR, :chown] do
         abort "version:#{version} is not installed!" unless FileTest.directory?(config.dist_to)
         FileUtils.ln_s(config.ngx_sbin_path, NGINX_CURRENT_BIN_NAME, :force => true)
+        Rake::Task[:chown].invoke
         $stdout.puts("#{version} default to use")
         $stdout.puts("bin: #{config.ngx_sbin_path}")
     end
@@ -156,7 +156,7 @@ task :chown do
     user = ENV["USER"]
     if sudo_user && sudo_user != user
         [HOME_DIR, DIST_DIR, BIN_DIR].each do |dir|
-            sh_exc("chown", "-R", sudo_user, dir)
+            sh_exc("chown", "-R", sudo_user, dir) if FileTest.directory?(dir)
         end    
     end
 end
