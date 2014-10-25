@@ -21,9 +21,9 @@ module Nginxbrew
             @dist_dir = opts[:dist_dir]
             @ngx_version = opts[:ngx_version]
             @is_openresty = opts[:is_openresty]
-            @version_name = version_name(@ngx_version, @is_openresty)
             @ngx_user = opts[:ngx_user]
             @ngx_group = opts[:ngx_group]
+            @version_name = version_name(@ngx_version, @is_openresty)
             @dist_to = File.join(@dist_dir, "ngx-#{@version_name}")
             @nginx_log_dir = File.join(@home_dir, "logs", @version_name)
             @src = src_name(@ngx_version, @is_openresty)
@@ -47,11 +47,11 @@ module Nginxbrew
                 --conf-path=#{@ngx_conf_path} \
                 --error-log-path=#{@nginx_log_dir}/error.log \
                 --http-log-path=#{@nginx_log_dir}/access.log \
-                --http-client-body-temp-path=#{@dist_to}/tmp/client_body \
-                --http-proxy-temp-path=#{@dist_to}/tmp/proxy \
-                --http-fastcgi-temp-path=#{@dist_to}/tmp/fastcgi \
-                --http-uwsgi-temp-path=#{@dist_to}/tmp/uwsgi \
-                --pid-path=#{@dist_to}/run/nginx.pid
+                --http-client-body-temp-path=#{@home_dir}/tmp/client_body \
+                --http-proxy-temp-path=#{@home_dir}/tmp/proxy \
+                --http-fastcgi-temp-path=#{@home_dir}/tmp/fastcgi \
+                --http-uwsgi-temp-path=#{@home_dir}/tmp/uwsgi \
+                --pid-path=#{@home_dir}/run/nginx.pid
             EOF
             cmd.split(" ").join(" ")
         end
