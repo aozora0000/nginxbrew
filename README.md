@@ -111,14 +111,18 @@ then nginxbrew starts to using this configuration.
 ## TODO
 
  - write tests completely
- - share nginx.conf for every versions
- - list up available nginx versions like as follows
+ - installable the same version of nginx with defferent labels like as follows
 
-     $ nginxbrew nginxes
+    $ nginxbrew install prj1 1.7.6
 
- - installable without specifying minor version of nginx like as follows
+    $ nginxbrew install prj2 1.7.6
 
-     $ nginxbrew install 1.7 # head of 1.7 will be installed
+    $ nginxbrew use 1.7.6-prj1
+
+ - multiple install
+
+    $ nginxbrew install 1.4 openresty-1.7 1.7.5
+
 
 ## Contributing
 

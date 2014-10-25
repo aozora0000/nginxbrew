@@ -1,0 +1,13 @@
+Nginxbrew changes
+
+
+Nginxbrew 0.0.4
+ - New command nginxies, openresties to show up available nginx versions.
+ - Change `configure` option to share pid-file, tmp dir extend over all builds.
+ - Change `make` to add -j2, TODO get num of CPUs dynamically
+ - Bug fixes.
+
+
+Nginxbrew 0.0.3
+ - Initial commit.
+
