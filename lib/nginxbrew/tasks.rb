@@ -4,9 +4,10 @@ require "pathname"
 require "fileutils"
 require "nginxbrew/nginxes"
 
+$debug = ENV["NGINXBREW_DEBUG"].to_i == 1
 
 $logger = Logger.new(STDOUT)
-$logger.level = (ENV["NGINXBREW_DEBUG"].to_i == 1) ? Logger::DEBUG : Logger::ERROR
+$logger.level = $debug ? Logger::DEBUG : Logger::ERROR
 
 
 def package_name_from(version)
@@ -36,8 +37,9 @@ end
 def sh_exc(cmd, *opts)
     line = cmd
     line += " " + opts.join(" ")
-    $logger.debug("exec: #{line}")
-    sh line
+    $stdout.puts("#{line} dir=[#{Dir.pwd}]")
+    line += " >/dev/null" unless $debug
+    sh line, verbose: false
 end
 
 
@@ -113,7 +115,7 @@ if VERSION
     desc "get nginx tarball version:#{version}"
     file TARBALL_DOWNLOADED_TO => SOURCE_DIR do
         Dir.chdir(SOURCE_DIR) do
-            sh_exc("wget", config.url)
+            sh_exc("wget", config.url, "-q")
         end
     end
 
@@ -149,7 +151,7 @@ if VERSION
     task :install => [:check_duplicatate, config.builtfile] do
         Rake::Task[:chown].invoke
         if installed_packages(DIST_DIR).size == 1
-            $logger.debug("this is first install, use this version as default")
+            $stdout.puts("this is first install, use this version as default")
             Rake::Task[:use].invoke
         end
     end
@@ -161,7 +163,7 @@ if VERSION
         FileUtils.ln_s(config.ngx_sbin_path, NGINX_CURRENT_BIN_NAME, :force => true)
         Rake::Task[:chown].invoke
         $stdout.puts("#{version} default to use")
-        $stdout.puts("bin: #{config.ngx_sbin_path}")
+        $stdout.puts("bin linked to #{config.ngx_sbin_path}")
     end
 end
 
