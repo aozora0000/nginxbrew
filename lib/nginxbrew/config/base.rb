@@ -14,7 +14,8 @@ module Nginxbrew
 
         attr_accessor :ngx_configure, :ngx_conf_path, :ngx_prefix
         attr_reader :ngx_user, :ngx_group, :nginx_log_dir,
-            :builtfile, :dist_to, :tarball, :src, :url, :home_dir, :ngx_sbin_path
+            :builtfile, :dist_to, :tarball, :src, :url, :home_dir, :dist_dir,
+            :ngx_sbin_path, :version_name
 
         def initialize(opts={})
             @home_dir = opts[:home_dir]
@@ -23,7 +24,7 @@ module Nginxbrew
             @is_openresty = opts[:is_openresty]
             @ngx_user = opts[:ngx_user]
             @ngx_group = opts[:ngx_group]
-            @version_name = version_name(@ngx_version, @is_openresty)
+            @version_name = create_version_name(@ngx_version, @is_openresty)
             @dist_to = File.join(@dist_dir, "ngx-#{@version_name}")
             @nginx_log_dir = File.join(@home_dir, "logs", @version_name)
             @src = src_name(@ngx_version, @is_openresty)
@@ -58,7 +59,7 @@ module Nginxbrew
 
         private
 
-        def version_name(v, is_openresty)
+        def create_version_name(v, is_openresty)
             is_openresty ? "openresty-#{v}" : v
         end
 

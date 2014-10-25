@@ -17,13 +17,15 @@ end
 def version_from_package(name)
     prefix = "ngx-"
     idx = name.index(prefix)
-    abort "Invalid name #{name}" if idx < 0
+    raise_abort "Invalid name #{name}" if idx < 0
     name.slice(prefix.size, name.size - 1)
 end
 
 
 def installed_packages(root)
-    Pathname.new(root).children.select{|e| e.directory? }.inject({}) do |memo, d|
+    dest = {}
+    return dest unless FileTest.directory?(root)
+    Pathname.new(root).children.select{|e| e.directory? }.inject(dest) do |memo, d|
         version = version_from_package(File.basename(d))
         memo[version] = d
         memo
@@ -36,6 +38,11 @@ def sh_exc(cmd, *opts)
     line += " " + opts.join(" ")
     $logger.debug("exec: #{line}")
     sh line
+end
+
+
+def raise_abort(msg)
+    abort "[aborted] #{msg}"
 end
 
 
@@ -67,9 +74,10 @@ if VERSION
     require "nginxbrew/config/base"
 
     is_openresty = VERSION.index(OPENRESTY) == 0
-    nginxes = is_openresty ? Nginxbrew::Nginxes.openresties : Nginxbrew::Nginxes.nginxes
 
     # resolve version name
+    $stdout.puts("checking version ...")
+    nginxes = is_openresty ? Nginxbrew::Nginxes.openresties : Nginxbrew::Nginxes.nginxes
     version = nil
     raw_version = nil
     if is_openresty
@@ -129,8 +137,16 @@ if VERSION
     end
 
 
+    desc "check nginx version duplication before install"
+    task :check_duplicatate do
+        if installed_packages(config.dist_dir).keys.include?(version)
+            raise_abort "#{config.version_name} is already installed"
+        end
+    end
+
+
     desc "install nginx"
-    task :install => [config.builtfile] do
+    task :install => [:check_duplicatate, config.builtfile] do
         Rake::Task[:chown].invoke
         if installed_packages(DIST_DIR).size == 1
             $logger.debug("this is first install, use this version as default")
@@ -141,7 +157,7 @@ if VERSION
 
     desc "switch nginx version"
     task :use => [BIN_DIR, :chown] do
-        abort "version:#{version} is not installed!" unless FileTest.directory?(config.dist_to)
+        raise_abort "#{config.version_name} is not installed!" unless FileTest.directory?(config.dist_to)
         FileUtils.ln_s(config.ngx_sbin_path, NGINX_CURRENT_BIN_NAME, :force => true)
         Rake::Task[:chown].invoke
         $stdout.puts("#{version} default to use")
