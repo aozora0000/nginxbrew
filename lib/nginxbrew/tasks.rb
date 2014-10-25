@@ -121,7 +121,7 @@ if VERSION
     desc "do build/install, after that create file:built to keep status of build"
     file config.builtfile => [SOURCE_EXTRACTED_TO, config.dist_to] do
         Dir.chdir(SOURCE_EXTRACTED_TO) do
-            [config.configure_command, "gmake", "gmake install"].each do |cmd|
+            [config.configure_command, "gmake -j2", "gmake install"].each do |cmd|
                 sh_exc(cmd)
             end
         end
