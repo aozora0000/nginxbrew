@@ -147,7 +147,7 @@ if VERSION
     desc "check nginx version duplication before install"
     task :check_duplicatate do
         if installed_packages(config.dist_dir).keys.include?(version)
-            raise_abort "#{config.version_name} is already installed"
+            warn "#{config.version_name} is already installed"
         end
     end
 
