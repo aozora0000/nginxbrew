@@ -4,6 +4,9 @@ require "pathname"
 require "fileutils"
 require "nginxbrew/nginxes"
 
+
+verbose(false)
+
 $debug = ENV["NGINXBREW_DEBUG"].to_i == 1
 
 $logger = Logger.new(STDOUT)
@@ -37,9 +40,9 @@ end
 def sh_exc(cmd, *opts)
     line = cmd
     line += " " + opts.join(" ")
-    $stdout.puts("#{line} dir=[#{Dir.pwd}]")
+    $logger.debug("#{line} dir=[#{Dir.pwd}]")
     line += " >/dev/null" unless $debug
-    sh line, verbose: false
+    sh line
 end
 
 
@@ -114,6 +117,7 @@ if VERSION
 
     desc "get nginx tarball version:#{version}"
     file TARBALL_DOWNLOADED_TO => SOURCE_DIR do
+        $stdout.puts("download #{config.version_name} from #{config.url}")
         Dir.chdir(SOURCE_DIR) do
             sh_exc("wget", config.url, "-q")
         end
@@ -130,6 +134,7 @@ if VERSION
 
     desc "do build/install, after that create file:built to keep status of build"
     file config.builtfile => [SOURCE_EXTRACTED_TO, config.dist_to] do
+        $stdout.puts("building #{config.version_name} ...")
         Dir.chdir(SOURCE_EXTRACTED_TO) do
             [config.configure_command, "gmake -j2", "gmake install"].each do |cmd|
                 sh_exc(cmd)
