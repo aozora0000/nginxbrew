@@ -25,7 +25,11 @@ module Nginxbrew
             end
             raise Exception.new("No versions of nginx!") if versions.size == 0
             @ngx_type = ngx_type
-            @versions = versions.uniq.sort.reverse
+            @versions = versions.uniq.map do |v|
+                Gem::Version.new(v) # 1.15.x <> 1.8.x should be 1.15.x > 1.8.x
+            end.sort.reverse.map do |v|
+                v.to_s
+            end
         end
 
         def size

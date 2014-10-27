@@ -77,9 +77,9 @@ describe Nginxbrew::Nginxes, "version control" do
     it "versions should be sorted order by version-number desc" do
         nginxes = Nginxbrew::Nginxes.new(
             Nginxbrew::Nginxes::TypeNginx,
-            %w(0.0.1 0.0.2 0.1.0 0.1.1 1.0.0 1.0.1 1.1.0 2.0.0)
+            %w(0.0.1 0.0.2 0.1.0 0.1.1 1.0.0 1.0.1 1.1.0 2.15.1 2.8.15)
         )
-        expect(nginxes.versions).to eq %w(2.0.0 1.1.0 1.0.1 1.0.0 0.1.1 0.1.0 0.0.2 0.0.1)
+        expect(nginxes.versions).to eq %w(2.15.1 2.8.15 1.1.0 1.0.1 1.0.0 0.1.1 0.1.0 0.0.2 0.0.1)
     end
 
     it "head_of should returns head of versions" do
@@ -90,6 +90,15 @@ describe Nginxbrew::Nginxes, "version control" do
         expect(nginxes.head_of("0.0")).to eq "0.0.1"
         expect(nginxes.head_of("0.1")).to eq "0.1.1"
         expect(nginxes.head_of("0")).to eq "0.1.1"
+    end
+
+    it "head_of is first element of versions which sorted by version number" do
+        nginxes = Nginxbrew::Nginxes.new(
+            Nginxbrew::Nginxes::TypeNginx,
+            %w(1.5.8.1 1.5.12.1 1.5.11.1)
+        )
+        expect(nginxes.head_of("1.5")).to eq "1.5.12.1"
+        expect(nginxes.head_of("1")).to eq "1.5.12.1"
     end
 
 end
