@@ -64,7 +64,7 @@ if CONFIG_FILE && !FileTest.file?(CONFIG_FILE)
 end
 
 
-SOURCE_DIR = "#{HOME_DIR}/src"
+SOURCE_DIR = "#{HOME_DIR}/.src"
 DIST_DIR = "#{HOME_DIR}/versions"
 BIN_DIR = "#{HOME_DIR}/bin"
 NGINX_CURRENT_BIN_NAME = "#{BIN_DIR}/nginx"

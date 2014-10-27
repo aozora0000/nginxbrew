@@ -33,8 +33,8 @@ module Nginxbrew
             @ngx_sbin_path = File.join(@dist_to, "bin/nginx")
             @builtfile = File.join(@dist_to, "built")
             @ngx_configure = nil
-            @ngx_conf_path = File.join(@dist_to, "nginx.conf")
-            @ngx_prefix = File.join(@dist_to, "user/share")
+            @ngx_conf_path = File.join(@dist_to, "conf/nginx.conf")
+            @ngx_prefix = @dist_to
         end
 
         def configure_command
