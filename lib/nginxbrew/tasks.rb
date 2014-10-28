@@ -1,59 +1,11 @@
 #!/usr/bin/env ruby
-require "logger"
 require "pathname"
 require "fileutils"
-require "nginxbrew/nginxes"
 
-
-verbose(false)
-
-$debug = ENV["NGINXBREW_DEBUG"].to_i == 1
-
-$logger = Logger.new(STDOUT)
-$logger.level = $debug ? Logger::DEBUG : Logger::ERROR
-
-
-def package_name_from(version)
-    "ngx-#{version}"
-end
-
-
-def version_from_package(name)
-    prefix = "ngx-"
-    idx = name.index(prefix)
-    raise_abort "Invalid name #{name}" if idx < 0
-    name.slice(prefix.size, name.size - 1)
-end
-
-
-def installed_packages(root)
-    dest = {}
-    return dest unless FileTest.directory?(root)
-    Pathname.new(root).children.select{|e| e.directory? }.inject(dest) do |memo, d|
-        version = version_from_package(File.basename(d))
-        memo[version] = d
-        memo
-    end
-end
-
-
-def sh_exc(cmd, *opts)
-    line = cmd
-    line += " " + opts.join(" ")
-    $logger.debug("#{line} dir=[#{Dir.pwd}]")
-    line += " >/dev/null" unless $debug
-    sh line
-end
-
-
-def raise_abort(msg)
-    abort "[aborted] #{msg}"
-end
-
-
-OPENRESTY = "openresty-"
+verbose(false) # stop verbosing by rake
 
 VERSION = ENV["VERSION"]
+
 HOME_DIR = ENV["NGINXBREW_HOME"] || File.join(ENV["HOME"], "nginxbrew")
 NGINX_USER = ENV["NGINXBREW_USER"] || "nginx"
 NGINX_GROUP = ENV["NGINXBREW_GROUP"] || "nginx"
@@ -63,42 +15,35 @@ if CONFIG_FILE && !FileTest.file?(CONFIG_FILE)
     raise Exception.new("Specified configuration file #{CONFIG_FILE} is not found")
 end
 
-
 SOURCE_DIR = "#{HOME_DIR}/src"
 DIST_DIR = "#{HOME_DIR}/versions"
 BIN_DIR = "#{HOME_DIR}/bin"
-NGINX_CURRENT_BIN_NAME = "#{BIN_DIR}/nginx"
+NGINX_BIN = "#{BIN_DIR}/nginx"
 
 
 [HOME_DIR, SOURCE_DIR, BIN_DIR, DIST_DIR].each do |dir|
     directory dir
 end
 
+local_env = Nginxbrew::LocalEnv.new(DIST_DIR)
+
 
 if VERSION
     require "nginxbrew/config/base"
 
-    is_openresty = VERSION.index(OPENRESTY) == 0
-
-    # resolve version name
     $stdout.puts("checking version ...")
+    raw_version, is_openresty = NamingConvention.resolve(VERSION)
     nginxes = is_openresty ? Nginxbrew::Nginxes.openresties : Nginxbrew::Nginxes.nginxes
-    version = nil
-    raw_version = nil
-    if is_openresty
-        raw_version = nginxes.head_of(VERSION.slice(OPENRESTY.size, VERSION.size - 1))
-        version = "#{OPENRESTY}#{raw_version}"
-    else
-        raw_version = nginxes.head_of(VERSION)
-        version = raw_version
-    end
+    raw_version = nginxes.head_of(raw_version)
+    package_name = NamingConvention.package_name_from(raw_version, is_openresty)
     $stdout.puts("resolved version: [#{is_openresty ? 'openresty' : 'nginx'}-]#{raw_version}")
-
+    $stdout.puts("nginx package: #{package_name}")
 
     Nginxbrew.config = Nginxbrew::Configuration.new(
         :home_dir => HOME_DIR,
         :dist_dir => DIST_DIR,
         :ngx_version => raw_version,
+        :package_name => package_name,
         :is_openresty => is_openresty,
         :ngx_user => NGINX_USER,
         :ngx_group => NGINX_GROUP
@@ -112,30 +57,30 @@ if VERSION
 
     directory config.dist_to
 
-    TARBALL_DOWNLOADED_TO = File.join(SOURCE_DIR, config.tarball)
-    SOURCE_EXTRACTED_TO = File.join(SOURCE_DIR, config.src)
+    tarball_download_to = File.join(SOURCE_DIR, config.tarball)
+    source_extract_to = File.join(SOURCE_DIR, config.src)
 
-    desc "get nginx tarball version:#{version}"
-    file TARBALL_DOWNLOADED_TO => SOURCE_DIR do
-        $stdout.puts("download #{config.version_name} from #{config.url}")
+    desc "get nginx tarball version:#{config.package_name}"
+    file tarball_download_to => SOURCE_DIR do
+        $stdout.puts("download #{config.package_name} from #{config.url}")
         Dir.chdir(SOURCE_DIR) do
             sh_exc("wget", config.url, "-q")
         end
     end
 
 
-    desc "extract tarball, #{SOURCE_EXTRACTED_TO} will be created"
-    directory SOURCE_EXTRACTED_TO => TARBALL_DOWNLOADED_TO do
+    desc "extract tarball, #{source_extract_to} will be created"
+    directory source_extract_to => tarball_download_to do
         Dir.chdir(SOURCE_DIR) do
-            sh_exc("tar", "zxf", TARBALL_DOWNLOADED_TO)
+            sh_exc("tar", "zxf", tarball_download_to)
         end
     end
 
 
     desc "do build/install, after that create file:built to keep status of build"
-    file config.builtfile => [SOURCE_EXTRACTED_TO, config.dist_to] do
-        $stdout.puts("building #{config.version_name} ...")
-        Dir.chdir(SOURCE_EXTRACTED_TO) do
+    file config.builtfile => [source_extract_to, config.dist_to] do
+        $stdout.puts("building #{config.package_name} ...")
+        Dir.chdir(source_extract_to) do
             [config.configure_command, "gmake -j2", "gmake install"].each do |cmd|
                 sh_exc(cmd)
             end
@@ -146,8 +91,8 @@ if VERSION
 
     desc "check nginx version duplication before install"
     task :check_duplicatate do
-        if installed_packages(config.dist_dir).keys.include?(version)
-            warn "#{config.version_name} is already installed"
+        if local_env.exists?(raw_version, is_openresty)
+            warn "#{config.package_name} is already installed"
         end
     end
 
@@ -155,7 +100,7 @@ if VERSION
     desc "install nginx"
     task :install => [:check_duplicatate, config.builtfile] do
         Rake::Task[:chown].invoke
-        if installed_packages(DIST_DIR).size == 1
+        if local_env.has_one_build?
             $stdout.puts("this is first install, use this version as default")
             Rake::Task[:use].invoke
         end
@@ -164,10 +109,12 @@ if VERSION
 
     desc "switch nginx version"
     task :use => [BIN_DIR, :chown] do
-        raise_abort "#{config.version_name} is not installed!" unless FileTest.directory?(config.dist_to)
-        FileUtils.ln_s(config.ngx_sbin_path, NGINX_CURRENT_BIN_NAME, :force => true)
+        unless FileTest.directory?(config.dist_to)
+            raise_abort "#{config.package_name} is not installed!"
+        end
+        FileUtils.ln_s(config.ngx_sbin_path, NGINX_BIN, :force => true)
         Rake::Task[:chown].invoke
-        $stdout.puts("#{version} default to use")
+        $stdout.puts("#{config.package_name} default to use")
         $stdout.puts("bin linked to #{config.ngx_sbin_path}")
     end
 end
@@ -188,13 +135,13 @@ end
 desc "list installed nginx"
 task :list => DIST_DIR do
     used_version = nil
-    if FileTest.file?(NGINX_CURRENT_BIN_NAME)
-        target_path = File.readlink(NGINX_CURRENT_BIN_NAME)
+    if FileTest.file?(NGINX_BIN)
+        target_path = File.readlink(NGINX_BIN)
         path_list = target_path.split("/")
         2.times {|i| path_list.pop } # remove bin/nginx
-        used_version = version_from_package(path_list.pop)
+        used_version = NamingConvention.version_from_package(path_list.pop)
     end
-    installed_packages(DIST_DIR).keys.sort.each do |v|
+    local_env.installed_packages.keys.sort.each do |v|
         prefix = (v == used_version) ? "*" : " "
         $stdout.puts("#{prefix} #{v}")
     end

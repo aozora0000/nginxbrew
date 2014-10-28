@@ -1,5 +1,10 @@
-require "nginxbrew/version"
 require "rake"
+
+require "nginxbrew/version"
+require "nginxbrew/nginxes"
+require "nginxbrew/convention"
+require "nginxbrew/rake_tools"
+
 
 module Nginxbrew
 
