@@ -1,5 +1,4 @@
 #!/usr/bin/env ruby
-require "pathname"
 require "fileutils"
 
 verbose(false) # stop verbosing by rake
