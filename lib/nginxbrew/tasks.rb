@@ -15,7 +15,8 @@ if CONFIG_FILE && !FileTest.file?(CONFIG_FILE)
     raise Exception.new("Specified configuration file #{CONFIG_FILE} is not found")
 end
 
-SOURCE_DIR = "#{HOME_DIR}/src"
+
+SOURCE_DIR = "#{HOME_DIR}/.src"
 DIST_DIR = "#{HOME_DIR}/versions"
 BIN_DIR = "#{HOME_DIR}/bin"
 NGINX_BIN = "#{BIN_DIR}/nginx"
