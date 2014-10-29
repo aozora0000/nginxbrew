@@ -1,5 +1,11 @@
 Nginxbrew changes
 
+Nginxbrew 0.0.5
+ - Changed some directory/path for installation.
+ - Quiet shell outs.
+ - Hide src directory.
+ - Bug fixes.
+
 
 Nginxbrew 0.0.4
  - New command nginxies, openresties to show up available nginx versions.

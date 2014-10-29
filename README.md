@@ -31,13 +31,15 @@ If you need to install openresty,
     $ nginxbrew install openresty-1.7.0.1
 
 
-After the command execution, ~/nginxbrew will be created into your machine and nginx is installed as follows
+After the command execution, ~/nginxbrew (or path which set NGINXBREW_HOME in env) will be created into your machine and nginx is installed as follows
 
-    ~/nginxbrew/bin/nginx -- current sbin
-    ~/nginxbrew/logs/<version> -- logfiles
-    ~/nginxbrew/versions/ngx-<version>/nginx.conf -- root config file
-    ~/nginxbrew/versions/ngx-<version> -- configs, sbin|pid of each version
-    ~/nginxbrew/versions/ngx-<version>/user/share -- $prefix directory of each version
+    ~/nginxbrew/bin/nginx                           -- current sbin
+    ~/nginxbrew/run/                                -- directory for pid file, be shared
+    ~/nginxbrew/logs/<version>/                     -- log files
+    ~/nginxbrew/versions/ngx-<version>/             -- $prefix directory of each version
+    ~/nginxbrew/versions/ngx-<version>/conf/        -- nginx.conf and other configuration files
+    ~/nginxbrew/versions/ngx-<version>/bin/nginx    -- nginx bin for each version
+
 
 Then you can start up nginx by command which same as original nginx as follows
 
