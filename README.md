@@ -88,17 +88,26 @@ You can choose other home dir for nginxbrew by the following env.
 
 And if you write configfile, You can change directory/options for nginxbrew.
 
-The following my_config.rb is configuration to share $prefix of nginx & nginx.conf troughout all builds of nginx.
+The following my_config.rb is configuration to share $prefix of nginx & nginx.conf troughout all builds of nginx, and changing user/group, build options.
 
 ```ruby
 Nginxbrew.configure do |config|
+
     config.ngx_prefix = File.join(config.home_dir, "share")
     config.ngx_conf_path = File.join(config.home_dir, "share/nginx.conf")
+
     config.ngx_user = "somebody"
     config.ngx_group = "somebody"
-    config.ngx_configure =<<-EOF
-        # --- options for ./configure, starts from ./configure ...
-    EOF
+
+    # add(or update) flags in this section
+    config.ngx_configure.merge!({
+        "--with-lua51" => nil,
+        "--pid-path" => "/tmp/nginx.pid",
+        "--http-fastcgi-temp-path" => File.join(config.home_dir, "/tmp/fastcgi"),
+        "--http-uwsgi-temp-path" => File.join(config.home_dir, "/tmp/uwsgi"),
+        "--with-select_module" => nil,
+    })
+
 end
 ```
 

@@ -31,7 +31,7 @@ module Nginxbrew
             @url = "#{@is_openresty ? OPENRESTY_URL : NGX_URL}/#{@tarball}"
             @ngx_sbin_path = File.join(@dist_to, "bin/nginx")
             @builtfile = File.join(@dist_to, "built")
-            @ngx_configure = nil
+            @ngx_configure = {}
             @ngx_conf_path = File.join(@dist_to, "conf/nginx.conf")
             @ngx_prefix = @dist_to
             @ngx_user = "nginx"
@@ -39,9 +39,15 @@ module Nginxbrew
         end
 
         def configure_command
-            return @ngx_configure if @ngx_configure
+            dest = ["./configure"]
+            configure_options.inject(dest) do |memo, opt|
+                memo << "#{opt[0]}" + (opt[1].nil? ? "" : "=#{opt[1]}")
+                memo
+            end.join(" ")
+        end
+
+        def configure_options
             cmd =<<-EOF
-                ./configure \
                 --user=#{@ngx_user} \
                 --group=#{@ngx_group} \
                 --prefix=#{@ngx_prefix} \
@@ -51,11 +57,15 @@ module Nginxbrew
                 --http-log-path=#{@nginx_log_dir}/access.log \
                 --http-client-body-temp-path=#{@home_dir}/tmp/client_body \
                 --http-proxy-temp-path=#{@home_dir}/tmp/proxy \
-                --http-fastcgi-temp-path=#{@home_dir}/tmp/fastcgi \
-                --http-uwsgi-temp-path=#{@home_dir}/tmp/uwsgi \
                 --pid-path=#{@home_dir}/run/nginx.pid
             EOF
-            cmd.split(" ").join(" ")
+            dest = cmd.split(" ").inject({}) do |memo, opt|
+                kv = opt.split("=")
+                memo[kv[0]] = (kv.size == 2) ? kv[1] : nil
+                memo
+            end
+            dest.merge!(@ngx_configure) if @ngx_configure
+            dest
         end
 
         private
