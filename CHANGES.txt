@@ -1,5 +1,9 @@
 Nginxbrew changes
 
+Nginxbrew 0.0.6
+ - You can change ngx-user/group by config file which specified in env {NGINXBREW_CONFIG}.
+
+
 Nginxbrew 0.0.5
  - Changed some directory/path for installation.
  - Quiet shell outs.

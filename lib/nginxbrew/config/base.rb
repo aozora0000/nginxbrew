@@ -12,7 +12,8 @@ module Nginxbrew
         NGX_URL = "http://nginx.org/download"
         OPENRESTY_URL = "http://openresty.org/download"
 
-        attr_accessor :ngx_configure, :ngx_conf_path, :ngx_prefix
+        attr_accessor :ngx_configure, :ngx_conf_path, :ngx_prefix, :ngx_user, :ngx_group
+
         attr_reader :ngx_user, :ngx_group, :nginx_log_dir,
             :builtfile, :dist_to, :tarball, :src, :url, :home_dir, :dist_dir,
             :ngx_sbin_path, :package_name
@@ -22,8 +23,6 @@ module Nginxbrew
             @dist_dir = opts[:dist_dir]
             @ngx_version = opts[:ngx_version]
             @is_openresty = opts[:is_openresty]
-            @ngx_user = opts[:ngx_user]
-            @ngx_group = opts[:ngx_group]
             @package_name = opts[:package_name]
             @dist_to = File.join(@dist_dir, @package_name)
             @nginx_log_dir = File.join(@home_dir, "logs", @package_name)
@@ -35,6 +34,8 @@ module Nginxbrew
             @ngx_configure = nil
             @ngx_conf_path = File.join(@dist_to, "conf/nginx.conf")
             @ngx_prefix = @dist_to
+            @ngx_user = "nginx"
+            @ngx_group = "nginx"
         end
 
         def configure_command

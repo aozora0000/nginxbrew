@@ -5,10 +5,7 @@ require "fileutils"
 verbose(false) # stop verbosing by rake
 
 VERSION = ENV["VERSION"]
-
 HOME_DIR = ENV["NGINXBREW_HOME"] || File.join(ENV["HOME"], "nginxbrew")
-NGINX_USER = ENV["NGINXBREW_USER"] || "nginx"
-NGINX_GROUP = ENV["NGINXBREW_GROUP"] || "nginx"
 
 CONFIG_FILE = ENV["NGINXBREW_CONFIG"]
 if CONFIG_FILE && !FileTest.file?(CONFIG_FILE)
@@ -45,9 +42,7 @@ if VERSION
         :dist_dir => DIST_DIR,
         :ngx_version => raw_version,
         :package_name => package_name,
-        :is_openresty => is_openresty,
-        :ngx_user => NGINX_USER,
-        :ngx_group => NGINX_GROUP
+        :is_openresty => is_openresty
     )
 
     require "nginxbrew/config/default"
