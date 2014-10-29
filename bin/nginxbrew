@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 require "nginxbrew"
+require "logger"
+
 
 usage =<<-EOF
 Usage: nginxbrew [-v] [-h] command [<args>]
@@ -38,6 +40,12 @@ end
 ENV["HOME"] ||= File.dirname(__FILE__) # recover $HOME if empty
 
 
+$debug = ENV["NGINXBREW_DEBUG"].to_i == 1
+
+$logger = Logger.new(STDOUT)
+$logger.level = $debug ? Logger::DEBUG : Logger::ERROR
+
+
 begin
     command = ARGV.shift
     case command
@@ -55,8 +63,10 @@ begin
             raise Exception.new("Unknown command '#{command}'")
     end
 rescue SystemExit => e # from rake.abort
+    $stderr.puts e.backtrace if $debug
     exit 255
 rescue Exception => e
+    $stderr.puts e.backtrace if $debug
     $stderr.puts "ERROR: #{e.message}"
     exit 255
 end
