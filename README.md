@@ -37,7 +37,7 @@ After the command execution, ~/nginxbrew (or path which set NGINXBREW_HOME in en
     ~/nginxbrew/run/                                -- directory for pid file, be shared
     ~/nginxbrew/logs/<version>/                     -- log files
     ~/nginxbrew/versions/ngx-<version>/             -- $prefix directory of each version
-    ~/nginxbrew/versions/ngx-<version>/conf/        -- nginx.conf and other configuration files
+    ~/nginxbrew/versions/ngx-<version>/nginx.conf    -- nginx.conf and also pther .conf files are installed here
     ~/nginxbrew/versions/ngx-<version>/bin/nginx    -- nginx bin for each version
 
 
