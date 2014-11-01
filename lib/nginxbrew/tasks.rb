@@ -162,3 +162,34 @@ task :openresties do
         $stdout.puts("[ngx_openresty-]#{v}")
     end
 end
+
+
+desc "Output  new configfile for nginxbrew into specified path as {GETCONF_OUTPUT_TO}"
+task :getconf do
+    output_to = ENV["GETCONF_OUTPUT_TO"]
+
+    from_file = File.join(File.dirname(__FILE__), "config/default.rb")
+    abort "crit, #{from_file} is not found" unless FileTest.file?(from_file)
+
+    to_file = FileTest.directory?(output_to) ?
+        File.join(output_to, "nginxbrew_conf.rb") : output_to
+    to_file = File.expand_path(to_file)
+    abort "config:'#{to_file}' is alrady exists!" if FileTest.file?(to_file)
+    abort "extname is must be '.rb'" if File.extname(to_file) != ".rb"
+
+    sh_exc("cp", from_file, to_file)
+
+    msg =<<-EOF
+'#{to_file}' is created, successfully.
+You can use this configuration by env NGINXBREW_CONFIG like as follows.
+
+ $ export NGINXBREW_CONFIG=#{to_file}
+
+  or
+
+ $ echo "export NGINXBREW_CONFIG=#{to_file}" >> ~/.bashrc && source ~/.bashrc
+    EOF
+
+    $stdout.puts(msg)
+end
+

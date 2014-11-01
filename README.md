@@ -82,13 +82,23 @@ If you specify prefix of version, the version will be filtered.
 
 ## Customize configuration
 
+### Change home directory of nginxbrew
+
 You can choose other home dir for nginxbrew by the following env.
 
     NGINXBREW_HOME   # change nginxbrew root directory from ~/nginxbrew to somewhere
 
-And if you write configfile, You can change directory/options for nginxbrew.
+### Change options to build nginx
 
-The following my_config.rb is configuration to share $prefix of nginx & nginx.conf troughout all builds of nginx, and changing user/group, build options.
+Some build options for can be changed by config file.
+
+This is in ruby DSL format, so you can change some build options easily.
+
+First, you can create new configfile by using *getconf* command.
+
+    $ nginxbrew getconf `pwd`/myconfig.rb
+
+The following myconfig.rb is configuration to share $prefix of nginx & nginx.conf troughout all builds of nginx, and changing user/group, build options.
 
 ```ruby
 Nginxbrew.configure do |config|
@@ -112,7 +122,7 @@ end
 ```
 
 
-after that, specify path to config file which you wrote as follows
+then, specify path to config file which you wrote as follows
 
     $ export NGINXBREW_CONFIG=/path/to/my_config.rb
 
