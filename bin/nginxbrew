@@ -18,8 +18,6 @@ Available subcommands:
 
 Optional environments:
     NGINXBREW_HOME                   Path to nginxbrew (will be) installed, ~/nginxbrew is default.
-    NGINXBREW_USER                   User for nginx (enabled in `install`), "nginx" is default.
-    NGINXBREW_GROUP                  Group for nginx (enable in `install`), "nginx" is default.
     NGINXBREW_DEBUG                  if 1, use DEBUG level for logging.
     NGINXBREW_CONFIG                 /path/to/configfile written in ruby DSL for build nginx.
 EOF
