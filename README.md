@@ -124,11 +124,11 @@ then nginxbrew starts to using this configuration.
  - write tests completely
  - installable the same version of nginx with defferent labels like as follows
 
-    $ nginxbrew install prj1 1.7.6
+    $ nginxbrew install 1.7.6:prj1
 
-    $ nginxbrew install prj2 1.7.6
+    $ nginxbrew install 1.7.6:prj2
 
-    $ nginxbrew use 1.7.6-prj1
+    $ nginxbrew use prj1
 
  - multiple install
 
