@@ -5,6 +5,8 @@ verbose(false) # stop verbosing by rake
 
 
 HOME_DIR = ENV["NGINXBREW_HOME"] || File.join(ENV["HOME"], "nginxbrew")
+$stdout.puts("using '#{HOME_DIR}' as nginxbrew home") if ENV["NGINXBREW_HOME"]
+
 
 CONFIG_FILE = ENV["NGINXBREW_CONFIG"]
 if CONFIG_FILE && !FileTest.file?(CONFIG_FILE)
