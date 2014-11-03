@@ -4,7 +4,7 @@ Nginxbrew 0.0.6
  - You can change ngx-user/group by config file which specified in env {NGINXBREW_CONFIG}.
  - Add/update build options by hash in ruby.
  - Change default conf path to prefix dir.
- - We got new command 'getconf' to make basic configuration file of nginxbrew.
+ - We got new command 'makeconf' to make basic configuration file of nginxbrew.
 
 
 Nginxbrew 0.0.5

@@ -15,7 +15,7 @@ Available subcommands:
     list                             Show list of installed nginx versions.
     nginxes                          Show list of available nginx versions.
     openresties                      Show list of available openresty versions.
-    getconf <path/to/config>         Output new configfile for nginxbrew into specified path.
+    makeconf <path/to/config>         Output new configfile for nginxbrew into specified path.
 
 Optional environments:
     NGINXBREW_HOME                   Path to nginxbrew (will be) installed, ~/nginxbrew is default.
@@ -58,10 +58,10 @@ begin
             Nginxbrew.run(:nginxes, envs={ "HEAD_VERSION" => ARGV.shift })
         when "openresties"
             Nginxbrew.run(:openresties, envs={ "HEAD_VERSION" => ARGV.shift })
-        when "getconf"
+        when "makeconf"
             output_to = ARGV.shift
             raise Exception.new("output directory/file for config is required!") unless output_to
-            Nginxbrew.run(:getconf, envs={ "GETCONF_OUTPUT_TO" => output_to })
+            Nginxbrew.run(:makeconf, envs={ "makeconf_OUTPUT_TO" => output_to })
         else
             raise Exception.new("Unknown command '#{command}'")
     end

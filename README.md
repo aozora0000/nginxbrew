@@ -94,9 +94,9 @@ Some build options for can be changed by config file.
 
 This is in ruby DSL format, so you can change some build options easily.
 
-First, you can create new configfile by using *getconf* command.
+First, you can create new configfile by using *makeconf* command.
 
-    $ nginxbrew getconf `pwd`/myconfig.rb
+    $ nginxbrew makeconf `pwd`/myconfig.rb
 
 The following myconfig.rb is configuration to share $prefix of nginx & nginx.conf troughout all builds of nginx, and changing user/group, build options.
 

@@ -166,9 +166,9 @@ task :openresties do
 end
 
 
-desc "Output  new configfile for nginxbrew into specified path as {GETCONF_OUTPUT_TO}"
-task :getconf do
-    output_to = ENV["GETCONF_OUTPUT_TO"]
+desc "Output  new configfile for nginxbrew into specified path as {makeconf_OUTPUT_TO}"
+task :makeconf do
+    output_to = ENV["makeconf_OUTPUT_TO"]
 
     from_file = File.join(File.dirname(__FILE__), "config/default.rb")
     abort "crit, #{from_file} is not found" unless FileTest.file?(from_file)
