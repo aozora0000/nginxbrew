@@ -3,7 +3,7 @@ require "fileutils"
 
 verbose(false) # stop verbosing by rake
 
-VERSION = ENV["VERSION"]
+
 HOME_DIR = ENV["NGINXBREW_HOME"] || File.join(ENV["HOME"], "nginxbrew")
 
 CONFIG_FILE = ENV["NGINXBREW_CONFIG"]
@@ -25,11 +25,11 @@ end
 local_env = Nginxbrew::LocalEnv.new(DIST_DIR)
 
 
-if VERSION
+if ENV["VERSION"]
     require "nginxbrew/config/base"
 
     $stdout.puts("checking version ...")
-    raw_version, is_openresty = NamingConvention.resolve(VERSION)
+    raw_version, is_openresty = NamingConvention.resolve(ENV["VERSION"])
     nginxes = is_openresty ? Nginxbrew::Nginxes.openresties : Nginxbrew::Nginxes.nginxes
     raw_version = nginxes.head_of(raw_version)
     package_name = NamingConvention.package_name_from(raw_version, is_openresty)
