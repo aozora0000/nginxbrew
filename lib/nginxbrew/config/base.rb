@@ -17,7 +17,7 @@ module Nginxbrew
         attr_accessor :ngx_configure, :ngx_conf_path, :ngx_prefix, :ngx_user, :ngx_group
 
         attr_reader :ngx_user, :ngx_group, :nginx_log_dir, :ngx_sbin_path, :package_name,
-            :builtfile, :dist_to, :tarball, :src, :url, :home_dir, :dist_dir
+            :builtfile, :dist_to, :tarball, :src, :url, :home_dir, :dist_dir, :is_openresty, :ngx_version
 
         def initialize(opts={})
             @home_dir = opts[:home_dir]

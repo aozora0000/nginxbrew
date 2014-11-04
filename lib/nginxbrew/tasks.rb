@@ -24,8 +24,6 @@ NGINX_BIN = "#{BIN_DIR}/nginx"
     directory dir
 end
 
-local_env = Nginxbrew::LocalEnv.new(DIST_DIR)
-
 
 if ENV["VERSION"]
     require "nginxbrew/config/base"
@@ -88,7 +86,7 @@ if ENV["VERSION"]
 
     desc "check nginx version duplication before install"
     task :check_duplicatate do
-        if local_env.exists?(raw_version, is_openresty)
+        unless Nginxbrew::Local.find(config).nil?
             warn "#{config.package_name} is already installed"
         end
     end
@@ -97,7 +95,7 @@ if ENV["VERSION"]
     desc "install nginx"
     task :install => [:check_duplicatate, config.builtfile] do
         Rake::Task[:chown].invoke
-        if local_env.has_one_build?
+        if Nginxbrew::Local.count_of_builds(config.dist_dir) == 1
             $stdout.puts("this is first install, use this version as default")
             Rake::Task[:use].invoke
         end
@@ -106,6 +104,8 @@ if ENV["VERSION"]
 
     desc "switch nginx version"
     task :use => [BIN_DIR, :chown] do
+        ngx = Nginxbrew::Local.find(config)
+        puts "ngx=#{ngx}"
         unless FileTest.directory?(config.dist_to)
             raise_abort "#{config.package_name} is not installed!"
         end
@@ -114,6 +114,7 @@ if ENV["VERSION"]
         $stdout.puts("#{config.package_name} default to use")
         $stdout.puts("bin linked to #{config.ngx_sbin_path}")
     end
+
 end
 
 
@@ -138,9 +139,9 @@ task :list => DIST_DIR do
         2.times {|i| path_list.pop } # remove bin/nginx
         used_version = NamingConvention.version_from_package(path_list.pop)
     end
-    local_env.installed_packages.keys.sort.each do |v|
-        prefix = (v == used_version) ? "*" : " "
-        $stdout.puts("#{prefix} #{v}")
+    Nginxbrew::Local.builds(DIST_DIR).each do |ngx|
+        prefix = ngx.is?(used_version) ? "*" : " "
+        $stdout.puts("#{prefix} #{ngx.name}")
     end
 end
 

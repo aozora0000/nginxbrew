@@ -14,48 +14,6 @@ module Nginxbrew
 
     end
 
-    class LocalEnv
-
-        def initialize(dist_dir)
-            @dist_dir = dist_dir
-        end
-
-        def exists?(raw_version, is_openresty)
-            ret = installed_packages.detect do |v, data|
-                v == raw_version && data[:openresty] == is_openresty
-            end
-            !ret.nil?
-        end
-
-        def installed_packages
-            dest = {}
-            return dest unless FileTest.directory?(@dist_dir)
-            child_dirs.inject(dest) do |memo, d|
-                version = NamingConvention.version_from_package(File.basename(d))
-                is_openresty = NamingConvention.openresty?(version)
-                raw_version = is_openresty ?
-                    NamingConvention.openresty_to_raw_version(version) : version
-                memo[version] = {
-                    :openresty => is_openresty,
-                    :raw_version => raw_version,
-                    :version => version
-                }
-                memo
-            end
-        end
-
-        def has_one_build?
-            installed_packages.size == 1
-        end
-
-        private
-
-        def child_dirs
-            Pathname.new(@dist_dir).children.select{|e| e.directory? }
-        end
-
-    end
-
     class Nginxes
 
         TypeNginx = "nginx"
