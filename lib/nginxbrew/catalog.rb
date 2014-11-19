@@ -1,5 +1,6 @@
 require "net/http"
 require "uri"
+require "fileutils"
 
 include Nginxbrew
 
@@ -14,10 +15,13 @@ module Nginxbrew
 
     end
 
-    class Nginxes
+    class Catalog
 
         TypeNginx = "nginx"
+
         TypeOpenresty = "openresty"
+
+        CacheExpireDays = 1
 
         attr_reader :ngx_type, :versions
 
@@ -58,25 +62,60 @@ module Nginxbrew
             r
         end
 
-        def self.nginxes
-            versions = html_body_of("http://nginx.org", "/download/").
-                gsub(/href="nginx\-([0-9\.]+?)\.tar\.gz"/).inject([]) do |memo, match|
-                    memo << $1
-                    memo
+        def self.nginxes(cache_dir=nil)
+            catalog_cache_or(cache_dir, "nginxes") do
+                versions = html_body_of("http://nginx.org", "/download/").
+                    gsub(/href="nginx\-([0-9\.]+?)\.tar\.gz"/).inject([]) do |memo, match|
+                        memo << $1
+                        memo
+                end
+                Catalog.new(TypeNginx, versions)
             end
-            Nginxes.new(TypeNginx, versions)
         end
 
-        def self.openresties
-            versions = html_body_of("http://openresty.org", "/").
-                gsub(/ngx_openresty\-([0-9\.]+?)\.tar\.gz/).inject([]) do |memo, match|
-                    memo << $1
-                    memo
+        def self.openresties(cache_dir=nil)
+            catalog_cache_or(cache_dir, "openresties") do
+                versions = html_body_of("http://openresty.org", "/").
+                    gsub(/ngx_openresty\-([0-9\.]+?)\.tar\.gz/).inject([]) do |memo, match|
+                        memo << $1
+                        memo
+                end
+                Catalog.new(TypeOpenresty, versions)
             end
-            Nginxes.new(TypeOpenresty, versions)
         end
 
         private
+
+        def self.catalog_cache_or(dir, key, &block)
+            return block.call if !dir || !key
+
+            cache_dir = File.join(dir, "catalog")
+            FileUtils.mkdir_p(cache_dir) unless FileTest.directory?(cache_dir)
+
+            cache_file = File.join(cache_dir, "#{key}.ca")
+
+            if FileTest.file?(cache_file)
+                expired = File.mtime(cache_file) + CacheExpireDays * 24 * 60 * 60
+                if Time.now < expired
+                    $logger.debug("Cache file: #{cache_file}")
+                    begin
+                        return Marshal.load(File.binread(cache_file))
+                    rescue Exception => e
+                        File.delete(cache_file)
+                        $logger.error("#{e}")
+                        $logger.error("#{cache_file} removed")
+                    end
+                else
+                    File.delete(cache_file)
+                end
+            end
+
+            dest = block.call
+            File.binwrite(cache_file, Marshal.dump(dest))
+            $logger.debug("Cache saved to #{cache_file}")
+
+            dest
+        end
 
         def self.html_body_of(host, page)
             url = URI.parse(host)

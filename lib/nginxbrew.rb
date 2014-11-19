@@ -1,7 +1,7 @@
 require "rake"
 
 require "nginxbrew/version"
-require "nginxbrew/nginxes"
+require "nginxbrew/catalog"
 require "nginxbrew/local"
 require "nginxbrew/convention"
 require "nginxbrew/rake_tools"

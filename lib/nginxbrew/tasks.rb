@@ -18,6 +18,7 @@ SOURCE_DIR = "#{HOME_DIR}/.src"
 DIST_DIR = "#{HOME_DIR}/versions"
 BIN_DIR = "#{HOME_DIR}/bin"
 NGINX_BIN = "#{BIN_DIR}/nginx"
+CACHE_DIR = "#{HOME_DIR}/.cache"
 
 
 [HOME_DIR, SOURCE_DIR, BIN_DIR, DIST_DIR].each do |dir|
@@ -30,7 +31,10 @@ if ENV["VERSION"]
 
     $stdout.puts("checking version ...")
     raw_version, is_openresty = NamingConvention.resolve(ENV["VERSION"])
-    nginxes = is_openresty ? Nginxbrew::Nginxes.openresties : Nginxbrew::Nginxes.nginxes
+
+    nginxes = is_openresty ? Nginxbrew::Catalog.openresties(cache_dir=CACHE_DIR) :
+        Nginxbrew::Catalog.nginxes(cache_dir=CACHE_DIR)
+
     raw_version = nginxes.head_of(raw_version)
     package_name = NamingConvention.package_name_from(raw_version, is_openresty)
     $stdout.puts("resolved version: [#{is_openresty ? 'openresty' : 'nginx'}-]#{raw_version}")
@@ -149,7 +153,7 @@ end
 desc "list nginx versions"
 task :nginxes do
     HEAD_VERSION = ENV["HEAD_VERSION"]
-    nginxes = Nginxbrew::Nginxes.nginxes
+    nginxes = Nginxbrew::Catalog.nginxes(cache_dir=CACHE_DIR)
     ((HEAD_VERSION) ? nginxes.filter_versions(HEAD_VERSION) : nginxes.versions).each do |v|
         $stdout.puts("[nginx-]#{v}")
     end
@@ -158,9 +162,8 @@ end
 
 desc "list openresty versions"
 task :openresties do
-    require "nginxbrew/nginxes"
     HEAD_VERSION = ENV["HEAD_VERSION"]
-    nginxes = Nginxbrew::Nginxes.openresties
+    nginxes = Nginxbrew::Catalog.openresties(cache_dir=CACHE_DIR)
     ((HEAD_VERSION) ? nginxes.filter_versions(HEAD_VERSION) : nginxes.versions).each do |v|
         $stdout.puts("[ngx_openresty-]#{v}")
     end
