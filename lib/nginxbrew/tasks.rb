@@ -9,9 +9,7 @@ $stdout.puts("using '#{HOME_DIR}' as nginxbrew home") if ENV["NGINXBREW_HOME"]
 
 
 CONFIG_FILE = ENV["NGINXBREW_CONFIG"]
-if CONFIG_FILE && !FileTest.file?(CONFIG_FILE)
-    raise Exception.new("Specified configuration file #{CONFIG_FILE} is not found")
-end
+$stdout.puts("using '#{CONFIG_FILE}' as nginxbrew config") if CONFIG_FILE
 
 
 SOURCE_DIR = "#{HOME_DIR}/.src"
@@ -109,7 +107,6 @@ if ENV["VERSION"]
     desc "switch nginx version"
     task :use => [BIN_DIR, :chown] do
         ngx = Nginxbrew::Local.find(config)
-        puts "ngx=#{ngx}"
         unless FileTest.directory?(config.dist_to)
             raise_abort "#{config.package_name} is not installed!"
         end
@@ -170,9 +167,9 @@ task :openresties do
 end
 
 
-desc "Output  new configfile for nginxbrew into specified path as {makeconf_OUTPUT_TO}"
+desc "Output  new configfile for nginxbrew into specified path as {MAKECONF_OUTPUT_TO}"
 task :makeconf do
-    output_to = ENV["makeconf_OUTPUT_TO"]
+    output_to = ENV["MAKECONF_OUTPUT_TO"]
 
     from_file = File.join(File.dirname(__FILE__), "config/default.rb")
     abort "crit, #{from_file} is not found" unless FileTest.file?(from_file)

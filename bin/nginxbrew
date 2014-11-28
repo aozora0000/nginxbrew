@@ -61,7 +61,7 @@ begin
         when "makeconf"
             output_to = ARGV.shift
             raise Exception.new("output directory/file for config is required!") unless output_to
-            Nginxbrew.run(:makeconf, envs={ "makeconf_OUTPUT_TO" => output_to })
+            Nginxbrew.run(:makeconf, envs={ "MAKECONF_OUTPUT_TO" => output_to })
         else
             raise Exception.new("Unknown command '#{command}'")
     end
