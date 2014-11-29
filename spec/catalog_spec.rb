@@ -128,4 +128,13 @@ describe Nginxbrew::Catalog, "version control" do
         expect(nginxes.head_of("1")).to eq "1.5.12.1"
     end
 
+    it "limit the active version" do
+        catalog = Nginxbrew::Catalog.new(
+            Nginxbrew::Catalog::TypeNginx,
+            %w(0.1 0.2 0.3)
+        )
+        catalog.unsupport_under!("0.2")
+        expect(catalog.versions).to eq %w(0.3 0.2)
+    end
+
 end

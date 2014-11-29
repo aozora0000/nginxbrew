@@ -38,6 +38,13 @@ module Nginxbrew
             end
         end
 
+        def unsupport_under!(version)
+            min_version = Gem::Version.new(version)
+            @versions = @versions.select do |v|
+                Gem::Version.new(v) >= min_version
+            end
+        end
+
         def size
             @versions.size
         end
@@ -69,7 +76,9 @@ module Nginxbrew
                         memo << $1
                         memo
                 end
-                Catalog.new(TypeNginx, versions)
+                c = Catalog.new(TypeNginx, versions)
+                c.unsupport_under!("0.5.38") # can not build under this version
+                c
             end
         end
 

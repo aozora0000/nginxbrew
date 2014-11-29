@@ -2,6 +2,7 @@ Nginxbrew changes
 
 Nginxbrew 0.0.7
  - Cache result of nginxes/openresties.
+ - Limit min version of nginx to support to upper v0.5.38.
  - Bug fixes.
 
 
